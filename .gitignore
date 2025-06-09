@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+frontend/node_modules/
+backend/node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables - IMPORTANTE
+.env*
+!.env.example
+frontend/.env*
+backend/.env*
+
+# Logs
+*.log
+
+# Lambda packages
+*.zip
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
