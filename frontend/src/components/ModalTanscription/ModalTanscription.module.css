@@ -1,0 +1,201 @@
+body:has(.transformModalContentOpen) {
+  overflow: hidden;
+}
+
+.cardContainer {
+  width: 100%;
+}
+
+.cardContainer[data-isloading="true"] {
+  width: 100%;
+  background-color: #8d8d8d;
+  height: 150px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0.5;
+
+  transition: background-color 300ms ease-in-out;
+  animation: 2.5s linear infinite pulse;
+}
+
+.cardContainer[data-recentlyadded="true"] {
+  color: red !important;
+  animation: 1.5s linear infinite pulse;
+  opacity: 2;
+}
+
+.transformModal {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+}
+
+.transformModalBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(1px);
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+  z-index: 999;
+}
+
+.transformModalBackgroundOpen {
+  opacity: 1;
+}
+
+.transformModalContent {
+  --_mix: rgb(0, 0, 0);
+  --_contrast: color-mix(in lab, currentColor 15%, var(--_mix));
+  --_border: color-mix(in lab, currentColor 85%, rgb(255, 255, 255));
+
+  background-color: var(--_contrast);
+  border: 3px dashed var(--_border);
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 30px;
+  will-change: transform, width, height;
+  cursor: default;
+}
+
+.transformModalContentOpen {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 20px 40px;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+
+  gap: 1rem;
+  padding: 1.5rem;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+
+  > * {
+    grid-column: 2;
+    width: 100%;
+  }
+}
+
+.modalHeader {
+  text-align: center;
+  grid-row: 1;
+
+  display: grid;
+  grid-template-columns: 1fr 11fr 1fr;
+  grid-template-rows: auto auto;
+
+  > * {
+    grid-column: 2;
+  }
+
+  .modalClose {
+    grid-row: 1 / -1;
+    grid-column: 3;
+    width: fit-content;
+
+    border-radius: 9999px;
+    aspect-ratio: 1;
+    padding: 0.1rem;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    background-color: currentColor;
+    color: currentColor;
+
+    svg {
+      color: #000;
+    }
+  }
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1.2;
+}
+
+.modalDate {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: inherit;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.transcriptionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.transcriptionLabel {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: inherit;
+  text-align: center;
+}
+
+.modalDescription {
+  text-wrap: pretty;
+  font-size: 1.2rem;
+}
+
+.modalFooter {
+  background-color: var(--_contrast);
+  width: fit-content;
+  font-size: 0.75rem;
+
+  margin-left: auto;
+  height: 100%;
+  padding: 0.5rem 0rem 1rem 0.5rem;
+
+  flex: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: inherit;
+}
+
+.modalButton {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  color: inherit;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    height: 1lh;
+    color: inherit;
+  }
+  &:hover {
+    border-color: inherit;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
