@@ -1,29 +1,42 @@
 # Dependencies
 node_modules/
 .pnpm-store/
-frontend/node_modules/
-backend/node_modules/
+**/node_modules/
 
 # Build outputs
 dist/
 build/
 *.tsbuildinfo
+backend/dist/
 
-# Environment variables - IMPORTANTE
+# Environment variables
 .env*
 !.env.example
-frontend/.env*
-backend/.env*
 
 # Logs
 *.log
+npm-debug.log*
+pnpm-debug.log*
 
 # Lambda packages
 *.zip
+lambda-deployment.zip
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 .DS_Store
+Thumbs.db
+
+# Vite temporary files
+*.timestamp-*.mjs
+vite.config.ts.timestamp-*
+
+# Temporary files
+tmp/
+temp/
+uploads/
