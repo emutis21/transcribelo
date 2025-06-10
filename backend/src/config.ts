@@ -8,4 +8,6 @@ export default {
   clientEmail: process.env.CLIENT_EMAIL,
   assemblyAIKey: process.env.ASSEMBLY_AI_KEY,
   openAIKey: process.env.OPENAI_KEY,
+  frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:4000',
+  nodeEnv: process.env.NODE_ENV ?? 'development',
 }
