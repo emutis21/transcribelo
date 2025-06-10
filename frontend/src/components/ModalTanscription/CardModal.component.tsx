@@ -1,11 +1,11 @@
 import { useCallback, memo, useMemo } from "react";
-import { Transcription } from "../../modules/transcription/types";
 import { useAnimatedModal } from "../../modules/shared/hooks/useAnimatedModal";
 import { useColorGenerator } from "../../modules/shared/hooks/useColorGenerator";
 import { ANIMATION_STATES } from "../../modules/shared/constants/animationStates";
 import { ModalTanscription } from ".";
 import styles from "./ModalTanscription.module.css";
 import { TranscriptionCard } from "../TranscriptionList/TranscriptionCard.component";
+import { Transcription } from '../../types';
 
 interface UrlModalType {
   currentTranscriptionId: string | null;

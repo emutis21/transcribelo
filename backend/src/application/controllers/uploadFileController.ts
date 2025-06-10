@@ -1,43 +1,43 @@
-import { Request, Response } from 'express'
-import multer from 'multer'
-import path from 'node:path'
-import fs from 'node:fs'
-import crypto from 'node:crypto'
+import { Request, Response } from "express";
+import multer from "multer";
+import fs from "node:fs";
+import crypto from "node:crypto";
 
-import diContainer from '../../infrastructure/diContainer'
+import diContainer from "../../infrastructure/diContainer";
 
-const uploadDir = path.join(__dirname, '../../../uploads')
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir)
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024,
+    files: 1,
   },
-  filename: function (req, file, cb) {
-    const uniqueName = `${crypto.randomUUID()}-${file.originalname}`
-
-    cb(null, uniqueName)
-  },
-})
-
-const upload = multer({ storage }).single('file')
+}).single("file");
 
 const uploadFileController = (req: Request, res: Response) => {
   upload(req, res, async (err) => {
     if (err) {
-      return res.status(500).send({ message: 'Error al cargar el archivo' })
+      console.error("Multer error:", err);
+      return res.status(500).send({
+        message:
+          err.code === "LIMIT_FILE_SIZE" ? "Archivo demasiado grande (máximo 50MB)" : "Error al cargar el archivo",
+      });
     }
 
-    const { file } = req
+    const { file } = req;
 
     if (!file) {
-      return res.status(400).send({ message: 'No se ha cargado ningún archivo' })
+      return res.status(400).send({ message: "No se ha cargado ningún archivo" });
     }
 
+    let tempFilePath: string | undefined;
+
     try {
-      const transcriptionResult = await diContainer.transcriptionService.transcribe(file.path);
+      tempFilePath = `/tmp/${crypto.randomUUID()}-${file.originalname}`;
+      fs.writeFileSync(tempFilePath, file.buffer);
+
+      console.log(`Processing file: ${file.originalname} (${file.size} bytes)`);
+
+      const transcriptionResult = await diContainer.transcriptionService.transcribe(tempFilePath);
 
       console.log("Transcription result:", transcriptionResult);
 
@@ -56,13 +56,21 @@ const uploadFileController = (req: Request, res: Response) => {
         });
       }
     } catch (error) {
-      console.error(error);
-
+      console.error("Transcription error:", error);
       res.status(500).send({ message: "Error al procesar el archivo" });
     } finally {
-      fs.unlinkSync(file.path);
+      if (tempFilePath) {
+        try {
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+            console.log(`Cleaned up: ${tempFilePath}`);
+          }
+        } catch (cleanupError) {
+          console.error("Cleanup error:", cleanupError);
+        }
+      }
     }
-  })
-}
+  });
+};
 
-export default uploadFileController
+export default uploadFileController;

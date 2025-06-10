@@ -1,7 +1,7 @@
 import { RefObject } from "react";
 import { formatDate } from "../../modules/shared/utils/formatDate";
-import { Transcription } from "../../modules/transcription/types";
 import styles from "./TranscriptionList.module.css";
+import { Transcription } from '../../types';
 
 interface TranscriptionCardProps {
   transcription: Transcription;

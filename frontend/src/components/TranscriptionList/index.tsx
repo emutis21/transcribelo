@@ -1,4 +1,4 @@
-import { Transcription } from "../../modules/transcription/types";
+import { Transcription } from '../../types';
 import { CardModal } from "../ModalTanscription/CardModal.component";
 import style from "./TranscriptionList.module.css";
 

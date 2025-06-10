@@ -1,5 +1,5 @@
+import { Transcription } from '../../../types';
 import { useLocalStorage } from "../../shared/hooks/useLocaleStorage";
-import { Transcription } from "../types";
 
 const TRANSCRIPTIONS_KEY = "transcriptions";
 

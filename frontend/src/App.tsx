@@ -1,12 +1,12 @@
 import { useCallback, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { InputFile } from "./components/InputFile";
-import { TranscriptionList } from "./components/TranscriptionList/index.tsx";
+import { TranscriptionList } from "./components/TranscriptionList";
 import { uploadFile } from "./modules/shared/services/upload";
 import { useTranscriptions } from "./modules/transcription/hooks/useTranscriptions";
 import { useUrlModal } from "./modules/shared/hooks/useUrlModal";
-import { ApiUploadResponse } from "./modules/transcription/types";
 import { useDocumentTitle } from './modules/shared/hooks/useDocumentTitle';
+import { ApiUploadResponse } from './types';
 
 const APP_STATUS = {
   IDLE: "idle",

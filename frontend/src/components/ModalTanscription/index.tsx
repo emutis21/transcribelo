@@ -1,12 +1,12 @@
 import { CSSProperties, RefObject, useEffect } from "react";
 import styles from "./ModalTanscription.module.css";
-import { Transcription } from "../../modules/transcription/types";
 import { useCopyToClipboard } from "../../modules/shared/hooks/useCopyToClipboard";
 import { ClipboardIcon } from "../icons/Clipboard.icon";
 import { ConfirmIcon } from "../icons/Confirm.icon";
 import { CloseIcon } from "../icons/Close.icon";
-import { TrashIcon } from "../icons/Trash.icon.tsx";
+import { TrashIcon } from "../icons/Trash.icon";
 import { toast } from "sonner";
+import { Transcription } from '../../types';
 
 interface ModalProps {
   transcription: Transcription;

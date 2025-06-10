@@ -1,16 +1,20 @@
 {
-  "name": "speech-to-text",
+  "name": "speech-to-text-monorepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Speech to text application with frontend and backend",
+  "private": true,
   "scripts": {
-    "dev": "pnpm --filter '**' dev",
+    "dev": "pnpm --parallel --filter frontend --filter backend dev",
+    "build": "pnpm --filter frontend --filter backend build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lambda:deploy": "pnpm --filter backend run deploy:manual",
+    "lambda:build": "pnpm --filter backend run lambda:build",
+    "lambda:package": "pnpm --filter backend run lambda:package"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
@@ -18,8 +22,5 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
     "typescript": "^5.2.2"
-  },
-  "dependencies": {
-    "speech-to-text": "file:"
   }
 }
