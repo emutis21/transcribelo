@@ -1,11 +1,31 @@
-name: Deploy Frontend
+name: Deploy Monorepo
 
 on:
   push:
     branches: [main]
 
 jobs:
+  # Detectar cambios
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      backend: ${{ steps.changes.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+
+  # Frontend (solo si cambia frontend)
   build-frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +45,14 @@ jobs:
 
       - name: Build Frontend
         run: pnpm --filter frontend build
-  
+
+      - name: ✅ Frontend ready
+        run: echo "Frontend will be deployed automatically by Vercel"
+
+  # Backend con Lambda Layers (solo si cambia backend)
   deploy-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,23 +72,69 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm --filter backend build
 
-      - name: Package for Lambda
+      - name: Create Lambda Layer for dependencies
+        run: |
+          mkdir -p layer/nodejs
+          cd backend
+          cp package.json ../layer/nodejs/
+          cd ../layer/nodejs
+          npm install --production --no-package-lock --no-audit --no-fund
+          cd ../..
+          zip -r9 dependencies-layer.zip layer/
+
+      - name: Create Lambda function package (code only)
         run: |
           cd backend/dist
-          cp ../package.json .
-          npm install --production
-          zip -r ../lambda-deployment.zip .
+          zip -r9 ../function-code.zip . -x "node_modules/*"
+          echo "📦 Function code size: $(du -h ../function-code.zip | cut -f1)"
+          echo "📦 Dependencies layer size: $(du -h ../dependencies-layer.zip | cut -f1)"
 
-      - name: Deploy to Lambda
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Update Lambda
+      - name: Deploy Layer and Function
         run: |
           cd backend
+          
+          # Crear o actualizar layer
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+            --layer-name speech-to-text-dependencies \
+            --zip-file fileb://dependencies-layer.zip \
+            --compatible-runtimes nodejs18.x \
+            --query 'Version' --output text)
+          
+          echo "📚 Layer version: $LAYER_VERSION"
+          
+          # Actualizar función con el nuevo layer
+          aws lambda update-function-configuration \
+            --function-name speech-to-text-api \
+            --layers arn:aws:lambda:us-east-1:$(aws sts get-caller-identity --query Account --output text):layer:speech-to-text-dependencies:$LAYER_VERSION
+          
+          # Actualizar código de la función
           aws lambda update-function-code \
             --function-name speech-to-text-api \
-            --zip-file fileb://lambda-deployment.zip
+            --zip-file fileb://function-code.zip
+
+      - name: ✅ Backend deployed
+        run: |
+          echo "🎉 Backend deployed successfully!"
+          echo "⚡ Lambda function: speech-to-text-api"
+          echo "📚 Layer version: created"
+
+  # Job de resumen (opcional)
+  deployment-summary:
+    needs: [changes, build-frontend, deploy-backend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📋 Deployment Summary
+        run: |
+          echo "## Deployment Results"
+          echo "Frontend changed: ${{ needs.changes.outputs.frontend }}"
+          echo "Backend changed: ${{ needs.changes.outputs.backend }}"
+          echo "Frontend job: ${{ needs.build-frontend.result || 'skipped' }}"
+          echo "Backend job: ${{ needs.deploy-backend.result || 'skipped' }}"
