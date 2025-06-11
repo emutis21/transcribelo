@@ -9,4 +9,7 @@ export interface ApiUploadResponse {
   message: string;
   transcription: string;
   transcriptId: string;
+  status?: string;
+  estimatedTime?: string;
+  checkUrl?: string;
 }
