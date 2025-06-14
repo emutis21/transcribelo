@@ -4,7 +4,7 @@ resource "aws_lambda_function" "speech_to_text_api" {
   function_name    = "speech-to-text-api"
   role            = aws_iam_role.lambda_role.arn
   handler         = "dist/lambda.handler"
-  runtime         = "nodejs18.x"
+  runtime         = "nodejs22.x"
   timeout         = 30
   memory_size     = 512
 

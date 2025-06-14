@@ -8,7 +8,7 @@ import diContainer from "../../infrastructure/diContainer";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024,
+    fileSize: 5000 * 1024 * 1024,
     files: 1,
   },
 }).single("file");
@@ -19,7 +19,7 @@ const uploadFileController = (req: Request, res: Response) => {
       console.error("Multer error:", err);
       return res.status(500).send({
         message:
-          err.code === "LIMIT_FILE_SIZE" ? "Archivo demasiado grande (máximo 50MB)" : "Error al cargar el archivo",
+          err.code === "LIMIT_FILE_SIZE" ? "Archivo demasiado grande (máximo 500MB)" : "Error al cargar el archivo",
       });
     }
 
@@ -37,24 +37,17 @@ const uploadFileController = (req: Request, res: Response) => {
 
       console.log(`Processing file: ${file.originalname} (${file.size} bytes)`);
 
-      const transcriptionResult = await diContainer.transcriptionService.transcribe(tempFilePath);
+      const transcriptionJob = await diContainer.transcriptionService.submitTranscription(tempFilePath);
 
-      console.log("Transcription result:", transcriptionResult);
+      console.log("Job submitted:", transcriptionJob);
 
-      if ("id" in transcriptionResult && "text" in transcriptionResult) {
-        res.status(200).send({
-          message: "El archivo se cargó correctamente",
-          transcription: transcriptionResult.text,
-          transcriptId: transcriptionResult.id,
-        });
-      } else {
-        const googleResult = transcriptionResult as unknown as { transcript?: string; text?: string };
-        res.status(200).send({
-          message: "El archivo se cargó correctamente",
-          transcription: googleResult.transcript || googleResult.text || "No transcription available",
-          transcriptId: null,
-        });
-      }
+      res.status(200).send({
+        message: "El archivo se cargó correctamente",
+        transcriptId: transcriptionJob.id,
+        status: "processing",
+        estimatedTime: "1-2 minutes",
+        checkUrl: `/api/transcription?id=${transcriptionJob.id}`,
+      });
     } catch (error) {
       console.error("Transcription error:", error);
       res.status(500).send({ message: "Error al procesar el archivo" });

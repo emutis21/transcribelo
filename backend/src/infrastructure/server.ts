@@ -1,38 +1,51 @@
 import express from "express";
 import cors from "cors";
 import routes from "./routes";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import config from "../config";
 
 const app = express();
-const port = config.nodeEnv === "production" ? 3000 : 3000;
 
 app.use(
   cors({
-    origin: config.frontendUrl || config.nodeEnv === "development" ? "*" : config.frontendUrl,
+    origin: "*",
     credentials: true,
   }),
 );
 
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "500mb" }));
+app.use(express.urlencoded({ extended: true, limit: "500mb" }));
 
-app.use("/api", routes);
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[DEBUG] Original: ${req.url}`);
 
-app.get("/health", (req, res) => {
+  if (req.url.startsWith("/default")) {
+    req.url = req.url.replace("/default", "");
+  }
+
+  if (req.url === "" || req.url === "/") {
+    req.url = "/";
+  }
+
+  console.log(`[DEBUG] Processed: ${req.url}`);
+  next();
+});
+
+app.get("/", (req, res) => {
   res.json({
-    status: "ok",
+    message: "Speech-to-Text API",
+    status: "running",
     timestamp: new Date().toISOString(),
-    environment: config.nodeEnv,
-    services: {
-      assemblyAI: !!config.assemblyAIKey,
-      googleCloud: !!config.projectId,
-      openAI: !!config.openAIKey,
+    paths: {
+      health: "/api/health",
+      upload: "/api/files",
     },
   });
 });
 
-app.use((err: Error, req: Request, res: Response) => {
+app.use("/api", routes);
+
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error("Server Error:", err);
   res.status(500).json({
     error: "Internal Server Error",
@@ -43,9 +56,7 @@ app.use((err: Error, req: Request, res: Response) => {
 export { app };
 
 if (config.nodeEnv !== "production") {
-  app.listen(port, () => {
-    console.log(`🚀 Server is running at http://localhost:${port}`);
-    console.log(`🌍 CORS origin: ${config.frontendUrl}`);
-    console.log(`🔧 Environment: ${config.nodeEnv}`);
+  app.listen(3000, () => {
+    console.log("🚀 Server running on port 3000");
   });
 }

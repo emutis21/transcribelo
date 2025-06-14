@@ -4,6 +4,9 @@ import * as https from "https";
 
 interface IAssemblyTranscriptionService {
   transcribe(filePath: string): Promise<{ id: string; text: string }>;
+
+  submitTranscription(filePath: string): Promise<{ id: string }>;
+  getTranscriptionResult(id: string): Promise<{ id: string; text: string; status: string }>;
 }
 
 class AssemblyTranscriptionService implements IAssemblyTranscriptionService {
@@ -44,7 +47,6 @@ class AssemblyTranscriptionService implements IAssemblyTranscriptionService {
       });
 
       console.log("Full transcript response:", JSON.stringify(transcript, null, 2));
-      console.log("Transcript ID:", transcript.id);
 
       if (!transcript.text) {
         throw new Error("Transcription completed but no text was returned");
@@ -60,6 +62,73 @@ class AssemblyTranscriptionService implements IAssemblyTranscriptionService {
         throw new Error(`Transcription failed: ${error.message}`);
       }
       throw new Error("An unknown error occurred during transcription");
+    }
+  }
+
+  async submitTranscription(filePath: string): Promise<{ id: string }> {
+    try {
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
+      }
+
+      const uploadUrl = await this.uploadFile(filePath);
+      if (!uploadUrl) {
+        throw new Error("Failed to get upload URL from AssemblyAI");
+      }
+
+      console.log("Upload URL:", uploadUrl);
+
+      const job = await this.client.transcripts.submit({
+        audio_url: uploadUrl,
+        language_code: "es",
+      });
+
+      console.log("Job submitted:", job);
+
+      return { id: job.id };
+    } catch (error) {
+      console.error("Submit transcription error:", error);
+      if (error instanceof Error) {
+        throw new Error(`Submit failed: ${error.message}`);
+      }
+      throw new Error("An unknown error occurred during submit");
+    }
+  }
+
+  async getTranscriptionResult(id: string): Promise<{ id: string; text: string; status: string }> {
+    try {
+      console.log(`Checking AssemblyAI job status for ID: ${id}`);
+
+      const transcript = await this.client.transcripts.get(id);
+
+      console.log(`AssemblyAI response:`, {
+        id: transcript.id,
+        status: transcript.status,
+        text: transcript.text ? `${transcript.text.substring(0, 100)}...` : null,
+      });
+
+      let status: string;
+
+      if (transcript.status === "queued" || transcript.status === "processing") {
+        status = "processing";
+      } else if (transcript.status === "completed") {
+        status = "completed";
+      } else {
+        status = "error";
+      }
+
+      return {
+        id: transcript.id,
+        text: transcript.text || "",
+        status: status,
+      };
+    } catch (error) {
+      console.error("Get transcription error:", error);
+      return {
+        id: id,
+        text: "",
+        status: "error",
+      };
     }
   }
 
