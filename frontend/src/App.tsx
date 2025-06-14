@@ -5,8 +5,8 @@ import { TranscriptionList } from "./components/TranscriptionList";
 import { uploadFile } from "./modules/shared/services/upload";
 import { useTranscriptions } from "./modules/transcription/hooks/useTranscriptions";
 import { useUrlModal } from "./modules/shared/hooks/useUrlModal";
-import { useDocumentTitle } from './modules/shared/hooks/useDocumentTitle';
-import { ApiUploadResponse } from './types';
+import { useDocumentTitle } from "./modules/shared/hooks/useDocumentTitle";
+import { ApiUploadResponse } from "./types";
 
 const APP_STATUS = {
   IDLE: "idle",
@@ -21,6 +21,7 @@ const APP_STATUS = {
 const BUTTON_TEXT = {
   [APP_STATUS.READY_UPLOAD]: "Subir archivo",
   [APP_STATUS.UPLOADING]: "Subiendo archivo...",
+  [APP_STATUS.ERROR]: "Reintentar",
 } as const;
 
 type AppStatusType = (typeof APP_STATUS)[keyof typeof APP_STATUS];
@@ -56,8 +57,8 @@ export function App() {
     if (urlModal.currentTranscriptionId) {
       const currentTranscription = transcriptions.find((t) => t.id === urlModal.currentTranscriptionId);
       return currentTranscription
-        ? `Viendo transcripción #${currentTranscription.id.slice(-8)} - Transcríbelo`
-        : "Viendo transcripción - Transcríbelo";
+        ? `Transcripción #${currentTranscription.id.slice(-8)} - Transcríbelo`
+        : "Transcripción - Transcríbelo";
     }
 
     return titleMapping[appStatus];
@@ -77,7 +78,7 @@ export function App() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (appStatus !== APP_STATUS.READY_UPLOAD || !file) return;
+    if ((appStatus !== APP_STATUS.READY_UPLOAD && appStatus !== APP_STATUS.ERROR) || !file) return;
 
     setAppStatus(APP_STATUS.UPLOADING);
 
@@ -128,7 +129,8 @@ export function App() {
     setAppStatus(APP_STATUS.IDLE);
   }, [clearTranscriptions]);
 
-  const showButton = appStatus === APP_STATUS.READY_UPLOAD || appStatus === APP_STATUS.UPLOADING;
+  const showButton =
+    appStatus === APP_STATUS.READY_UPLOAD || appStatus === APP_STATUS.UPLOADING || appStatus === APP_STATUS.ERROR;
   const isLoading =
     appStatus === APP_STATUS.LOADING || appStatus === APP_STATUS.UPLOADING || appStatus === APP_STATUS.DELETING;
 
