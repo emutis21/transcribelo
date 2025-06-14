@@ -9,9 +9,10 @@ interface TranscriptionCardProps {
   isActive: boolean;
   cardRef: RefObject<HTMLDivElement>;
   color?: string;
+  isRecentlyAdded?: boolean;
 }
 
-export const TranscriptionCard = ({ transcription, onClick, isActive, cardRef, color }: TranscriptionCardProps) => {
+export const TranscriptionCard = ({ transcription, onClick, isActive, cardRef, color, isRecentlyAdded }: TranscriptionCardProps) => {
   return (
     <div
       ref={cardRef}
@@ -26,8 +27,12 @@ export const TranscriptionCard = ({ transcription, onClick, isActive, cardRef, c
           onClick();
         }
       }}
+      data-recentlyadded={isRecentlyAdded}
       aria-label={`Abrir transcripción: ${transcription.text.substring(0, 50)}...`}
     >
+      {isRecentlyAdded && 
+        <span className={styles.recentlyAddedBadge}>Nueva</span>
+      }
       <div className={styles.cardContent}>
         <header className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>Transcripción #{transcription.id.slice(-8)}</h3>

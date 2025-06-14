@@ -57,13 +57,14 @@ export const CardModal = memo(
     }
 
     return (
-      <article className={styles.cardContainer} data-recentlyadded={isRecentlyAdded}>
+      <article className={styles.cardContainer}>
         <TranscriptionCard
           transcription={transcription}
           onClick={handleOpenModal}
           isActive={modalStates.isActive}
           cardRef={cardRef}
           color={color}
+          isRecentlyAdded={isRecentlyAdded}
         />
 
         {animationState !== ANIMATION_STATES.IDLE && (

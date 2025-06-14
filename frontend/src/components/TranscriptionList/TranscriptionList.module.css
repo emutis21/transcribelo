@@ -117,3 +117,35 @@
     font-size: 1rem;
   }
 }
+
+.card[data-recentlyadded="true"] {
+  .cardContent {
+    animation: 1.5s linear infinite pulse;
+    filter: saturate(2);
+  }
+}
+
+.recentlyAddedBadge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: var(--_contrast);
+  color: #ffff00;
+  border: 1px solid var(--_border);
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0% {
+    filter: saturate(0.2);
+  }
+  50% {
+    filter: saturate(1.2);
+  }
+  100% {
+    filter: saturate(0.2);
+  }
+}
