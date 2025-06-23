@@ -101,6 +101,28 @@ class AssemblyTranscriptionService implements IAssemblyTranscriptionService {
 
       const transcript = await this.client.transcripts.get(id);
 
+      // LOG específico del campo error primero
+      if (transcript.status === "error") {
+        console.error(`🚨 ASSEMBLY AI ERROR:`, transcript.error);
+        console.error(`🚨 ERROR TYPE:`, typeof transcript.error);
+        console.error(`🚨 FULL ERROR OBJECT:`, JSON.stringify(transcript.error, null, 2));
+      }
+
+      // LOG del status y campos clave
+      console.log(`✅ Status: ${transcript.status}`);
+      console.log(`✅ Audio URL: ${transcript.audio_url}`);
+      console.log(`✅ Language: ${transcript.language_code}`);
+      console.log(`✅ Duration: ${transcript.audio_duration}`);
+
+      // Solo si hay error, log más detalles
+      if (transcript.status === "error") {
+        console.error(`❌ Error details:`, {
+          id: transcript.id,
+          status: transcript.status,
+          error: transcript.error, // Este es el campo clave
+        });
+      }
+
       console.log(`AssemblyAI response:`, {
         id: transcript.id,
         status: transcript.status,
